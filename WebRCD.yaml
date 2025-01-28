@@ -1,14 +1,15 @@
 openapi: 3.0.0
 info:
-  title: Wager API
-  description: |
-    API for managing flags, postboxes (forum-like functionality), live chat,
-    and user info sections for a WebSDR-like system.  
-    This API aims to store and retrieve frequency flags, user posts, 
-    chat messages, and user-specific historical data.
+  title: API Wager
+  description: >
+    API pour gérer les flags, les postbox (fonctionnalité de type forum),
+    le chat en direct, et les sections d'informations utilisateur pour un système 
+    similaire à WebSDR.  
+    Cette API vise à stocker et récupérer des flags de fréquence, des messages 
+    d'utilisateur, des messages de chat, et des données historiques spécifiques aux utilisateurs.
   version: 1.0.0
   contact:
-    name: API Support
+    name: Support de l'API
     email: support@websdr.com
   license:
     name: Apache 2.0
@@ -16,32 +17,32 @@ info:
 
 servers:
   - url: https://api.WebSDR.com/v1
-    description: Production server
+    description: Serveur de production
   - url: http://localhost:3000
-    description: Local development server
+    description: Serveur de développement local
 
 tags:
-  - name: Flags
-    description: Manage flags and their data. Typically used to mark specific frequencies with info.
-  - name: Postbox
-    description: Forum-like functionality for user posts.
-  - name: Info
-    description: Manage user-specific information and history.
-  - name: Chat
-    description: Real-time chat about specific frequencies.
-  - name: List
-    description: Retrieve all data for flags.
+  - name: FLAGS
+    description: Gérer les flags et leurs données. Utilisé pour marquer des fréquences spécifiques avec des informations.
+  - name: POSTBOX
+    description: Fonctionnalité de type forum pour les messages des utilisateurs.
+  - name: INFO
+    description: Gérer les informations spécifiques aux utilisateurs et leur historique.
+  - name: CHAT
+    description: Chat en temps réel sur des fréquences spécifiques.
+  - name: LIST
+    description: Récupérer toutes les données des flags.
 
 paths:
-
   /flags:
     get:
       tags:
-        - List
-      summary: Retrieve all flags
-      description: |
-        This endpoint retrieves a list of all available flags. Flags are used
-        to mark frequencies with specific info such as name, frequency, and region.
+        - LIST
+      summary: Récupérer tous les flags
+      description: >
+        Cet endpoint permet de récupérer une liste de tous les flags disponibles.
+        Les flags sont utilisés pour marquer les fréquences avec des informations spécifiques
+        comme le nom, la fréquence et la région.
       operationId: getAllFlags
       parameters:
         - in: query
@@ -50,38 +51,38 @@ paths:
             type: number
             format: float
             example: 190.00
-          description: Filter flags by minimum frequency (MHz).
+          description: Filtrer les flags par fréquence minimale (MHz).
         - in: query
           name: freqMax
           schema:
             type: number
             format: float
             example: 597.00
-          description: Filter flags by maximum frequency (MHz).
+          description: Filtrer les drapeaux par fréquence maximale (MHz).
         - in: query
           name: page
           schema:
             type: integer
             default: 1
             minimum: 1
-          description: Page number for pagination.
+          description: Numéro de la page pour la pagination.
         - in: query
           name: limit
           schema:
             type: integer
             default: 10
             minimum: 1
-          description: Number of items per page.
+          description: Nombre d'éléments par page.
         - in: query
           name: sort
           schema:
             type: string
             enum: [freq, region, nom]
             example: freq
-          description: Sort flags by a specific field (e.g., 'freq', 'region', or 'nom').
+          description: Trier les drapeaux par un champ spécifique (par exemple, 'freq', 'region' ou 'nom').
       responses:
         "200":
-          description: List of flags
+          description: Liste des drapeaux
           content:
             application/json:
               schema:
@@ -96,7 +97,7 @@ paths:
                   freq: 250
                   region: "Lyon, FRANCE"
         "400":
-          description: Invalid query parameters
+          description: Paramètres de requête invalides
           content:
             application/json:
               schema:
@@ -104,11 +105,11 @@ paths:
 
     put:
       tags:
-        - Flags
-      summary: Create or update a flag
-      description: |
-        Create a new flag or update an existing one based on the `nom` (unique name) property.
-        If the flag already exists, the values (freq, region) will be updated.
+        - FLAGS
+      summary: Créer ou mettre à jour un drapeau
+      description: >
+        Créer un nouveau drapeau ou mettre à jour un drapeau existant en fonction de la propriété `nom` (nom unique).  
+        Si le drapeau existe déjà, ses valeurs (`freq`, `region`) seront mises à jour.
       operationId: createOrUpdateFlag
       security:
         - BearerAuth: []
@@ -124,7 +125,7 @@ paths:
               region: "Bordeaux, FRANCE"
       responses:
         "200":
-          description: Flag successfully created/updated
+          description: Drapeau créé ou mis à jour avec succès
           content:
             application/json:
               schema:
@@ -134,19 +135,19 @@ paths:
                 freq: 190.00
                 region: "Bordeaux, FRANCE"
         "400":
-          description: Invalid input data
+          description: Données d'entrée invalides
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
         "401":
-          description: Unauthorized (Missing or invalid Bearer token)
+          description: Non autorisé (token Bearer manquant ou invalide)
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
         "500":
-          description: Internal server error
+          description: Erreur interne du serveur
           content:
             application/json:
               schema:
@@ -155,25 +156,25 @@ paths:
   /postbox:
     get:
       tags:
-        - Postbox
-      summary: Retrieve all posts
-      description: Fetch all forum-like posts from the postbox.
+        - POSTBOX
+      summary: Récupérer tous les messages
+      description: Récupérer tous les messages de type forum depuis la postbox.
       operationId: getPosts
       parameters:
         - in: query
           name: user
           schema:
             type: string
-          description: Filter posts by user name
+          description: Filtrer les messages par nom d'utilisateur.
         - in: query
           name: date
           schema:
             type: string
             format: date
-          description: Filter posts by a specific date
+          description: Filtrer les messages par une date spécifique.
       responses:
         "200":
-          description: List of posts
+          description: Liste des messages
           content:
             application/json:
               schema:
@@ -192,9 +193,9 @@ paths:
 
     post:
       tags:
-        - Postbox
-      summary: Create a new post
-      description: Create a new post in the postbox forum.
+        - POSTBOX
+      summary: Créer un nouveau message
+      description: Créer un nouveau message dans la boîte de messages de type forum.
       operationId: createPost
       security:
         - BearerAuth: []
@@ -211,25 +212,25 @@ paths:
               contenu: "........"
       responses:
         "201":
-          description: Post successfully created
+          description: Message créé avec succès
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Post'
         "400":
-          description: Invalid request body
+          description: Corps de requête invalide
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
         "401":
-          description: Unauthorized (Missing or invalid Bearer token)
+          description: Non autorisé (token Bearer manquant ou invalide)
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
         "500":
-          description: Internal server error
+          description: Erreur interne du serveur
           content:
             application/json:
               schema:
@@ -238,20 +239,21 @@ paths:
   /info:
     get:
       tags:
-        - Info
-      summary: Retrieve user info
-      description: Retrieve profile information and listening history for a specific user.
+        - INFO
+      summary: Récupérer les informations utilisateur
+      description: >
+        Récupérer les informations de profil et l'historique d'écoute pour un utilisateur spécifique.
       operationId: getUserInfo
       parameters:
         - in: query
           name: user
           schema:
             type: string
-          description: Username to retrieve info for
+          description: Nom d'utilisateur pour lequel récupérer les informations.
           required: true
       responses:
         "200":
-          description: User info retrieved
+          description: Informations utilisateur récupérées
           content:
             application/json:
               schema:
@@ -265,7 +267,7 @@ paths:
                   - flag: "RockFM"
                     date: "2025-01-28"
         "404":
-          description: User not found
+          description: Utilisateur introuvable
           content:
             application/json:
               schema:
@@ -273,9 +275,9 @@ paths:
 
     delete:
       tags:
-        - Info
-      summary: Delete user info
-      description: Remove all stored info for a given user.
+        - INFO
+      summary: Supprimer les informations utilisateur
+      description: Supprimer toutes les informations enregistrées pour un utilisateur donné.
       operationId: deleteUserInfo
       security:
         - BearerAuth: []
@@ -284,25 +286,25 @@ paths:
           name: user
           schema:
             type: string
-          description: Username to delete info for
+          description: Nom d'utilisateur pour lequel supprimer les informations.
           required: true
       responses:
         "204":
-          description: User info deleted
+          description: Informations utilisateur supprimées
         "401":
-          description: Unauthorized (Missing or invalid Bearer token)
+          description: Non autorisé (token Bearer manquant ou invalide)
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
         "404":
-          description: User not found
+          description: Utilisateur introuvable
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
         "500":
-          description: Internal server error
+          description: Erreur interne du serveur
           content:
             application/json:
               schema:
@@ -311,9 +313,10 @@ paths:
   /chat:
     get:
       tags:
-        - Chat
-      summary: Retrieve chat messages
-      description: Get the most recent chat messages. Can be filtered by frequency or user if needed.
+        - CHAT
+      summary: Récupérer les messages de chat
+      description: >
+        Obtenir les messages de chat les plus récents. Peut être filtré par fréquence ou utilisateur si nécessaire.
       operationId: getChatMessages
       parameters:
         - in: query
@@ -321,15 +324,15 @@ paths:
           schema:
             type: number
             format: float
-          description: Filter chat messages by frequency (MHz).
+          description: Filtrer les messages de chat par fréquence (MHz).
         - in: query
           name: user
           schema:
             type: string
-          description: Filter chat messages by username.
+          description: Filtrer les messages de chat par nom d'utilisateur.
       responses:
         "200":
-          description: Chat messages retrieved
+          description: Messages de chat récupérés
           content:
             application/json:
               schema:
@@ -346,9 +349,9 @@ paths:
 
     put:
       tags:
-        - Chat
-      summary: Send a new chat message
-      description: Add a new chat message in real-time about a specific frequency.
+        - CHAT
+      summary: Envoyer un nouveau message de chat
+      description: Ajouter un nouveau message de chat en temps réel sur une fréquence spécifique.
       operationId: sendChatMessage
       security:
         - BearerAuth: []
@@ -364,25 +367,25 @@ paths:
               contenu: "Wow!"
       responses:
         "201":
-          description: Chat message successfully sent
+          description: Message de chat envoyé avec succès
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Chat'
         "400":
-          description: Invalid request body
+          description: Corps de requête invalide
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
         "401":
-          description: Unauthorized (Missing or invalid Bearer token)
+          description: Non autorisé (token Bearer manquant ou invalide)
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
         "500":
-          description: Internal server error
+          description: Erreur interne du serveur
           content:
             application/json:
               schema:
@@ -405,7 +408,7 @@ components:
       properties:
         nom:
           type: string
-          description: Unique name/identifier for the station or flag.
+          description: Nom unique/identifiant pour la station ou le drapeau.
           example: "NRJ"
         freq:
           type: number
@@ -413,7 +416,7 @@ components:
           example: 190.00
         region:
           type: string
-          description: Geographical region or city/country of the station.
+          description: Région géographique ou ville/pays de la station.
           example: "Bordeaux, FRANCE"
 
     Post:
@@ -426,20 +429,20 @@ components:
       properties:
         nom_user:
           type: string
-          description: Username of the post's author.
+          description: Nom d'utilisateur de l'auteur du message.
           example: "S7VenStars"
         date_post:
           type: string
           format: date
-          description: Date when the post was created.
+          description: Date de création du message.
           example: "2025-01-28"
         titre:
           type: string
-          description: Title of the post.
+          description: Titre du message.
           example: "Etranges Frequences sur ..."
         contenu:
           type: string
-          description: Body/content of the post.
+          description: Corps/contenu du message.
           example: "........"
 
     Chat:
@@ -451,16 +454,16 @@ components:
       properties:
         nom_user:
           type: string
-          description: Username of the person sending the chat message.
+          description: Nom d'utilisateur de l'auteur du message de chat.
           example: "S7VenStars"
         date:
           type: string
           format: date-time
-          description: Timestamp of the message, in ISO 8601 format.
+          description: Horodatage du message, au format ISO 8601.
           example: "2025-01-28T15:56:00Z"
         contenu:
           type: string
-          description: Content of the chat message.
+          description: Contenu du message de chat.
           example: "Wow!"
 
     Info:
@@ -471,27 +474,27 @@ components:
       properties:
         nom_user:
           type: string
-          description: The username for which this info is stored.
+          description: Nom d'utilisateur pour lequel ces informations sont enregistrées.
           example: "S7VenStars"
         date_creation:
           type: string
           format: date
-          description: The date this user was created in the system.
+          description: Date à laquelle cet utilisateur a été créé dans le système.
           example: "2025-01-28"
         historique:
           type: array
-          description: A history of flags listened by the user, along with the date of listening.
+          description: Historique des drapeaux écoutés par l'utilisateur, avec la date d'écoute.
           items:
             type: object
             properties:
               flag:
                 type: string
-                description: The name of the flag or station listened to.
+                description: Nom du drapeau ou de la station écoutée.
                 example: "NRJ"
               date:
                 type: string
                 format: date
-                description: The date the user listened to this station.
+                description: Date à laquelle l'utilisateur a écouté cette station.
                 example: "2025-01-27"
 
     Error:
@@ -502,4 +505,4 @@ components:
           example: 400
         message:
           type: string
-          example: "Invalid request parameters"
+          example: "Paramètres de requête invalides"
