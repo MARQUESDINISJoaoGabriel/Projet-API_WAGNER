@@ -153,6 +153,166 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+    post:
+      tags:
+        - FLAGS
+      summary: Ajouter un nouveau drapeau (exclusif)
+      description: >
+        Permet d'ajouter un nouveau drapeau **uniquement** s'il n'existe pas déjà.
+        Si le `nom` est déjà présent, l'API renvoie une erreur.
+      operationId: createFlagExclusive
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Flag'
+            example:
+              nom: "JoaoFM"
+              freq: 222.22
+              region: "Lisbonne, PORTUGAL"
+      responses:
+        "201":
+          description: Nouveau drapeau ajouté avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Flag'
+              example:
+                nom: "JoaoFM"
+                freq: 222.22
+                region: "Lisbonne, PORTUGAL"
+        "409":
+          description: Conflit - Un drapeau avec ce nom existe déjà
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                code: 409
+                message: "Le drapeau existe déjà."
+        "400":
+          description: Requête invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Non autorisé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    patch:
+      tags:
+        - FLAGS
+      summary: Mise à jour partielle d'un drapeau
+      description: >
+        Met à jour **certaines** propriétés d'un drapeau existant.  
+        Par exemple, on peut vouloir changer uniquement la région ou la fréquence.
+      operationId: patchFlag
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: nom
+          schema:
+            type: string
+            example: "NRJ"
+          required: true
+          description: Nom unique du drapeau à mettre à jour.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                freq:
+                  type: number
+                  format: float
+                  example: 195.55
+                  description: Nouvelle fréquence
+                region:
+                  type: string
+                  example: "Paris, FRANCE"
+                  description: Nouvelle région
+            example:
+              freq: 195.55
+              region: "Paris, FRANCE"
+      responses:
+        "200":
+          description: Drapeau mis à jour partiellement avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Flag'
+              example:
+                nom: "NRJ"
+                freq: 195.55
+                region: "Paris, FRANCE"
+        "400":
+          description: Paramètres invalides ou corps de requête vide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Non autorisé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Drapeau introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags:
+        - FLAGS
+      summary: Supprimer un drapeau
+      description: >
+        Supprimer un drapeau spécifique en fonction de son nom.
+        Peut également supprimer tous les drapeaux si aucun nom n'est fourni
+        (selon logique d'implémentation).
+      operationId: deleteFlag
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: nom
+          schema:
+            type: string
+            example: "RockFM"
+          description: Nom du drapeau à supprimer. 
+      responses:
+        "204":
+          description: Drapeau supprimé (ou tous les drapeaux supprimés) avec succès
+        "401":
+          description: Non autorisé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Drapeau introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Erreur interne
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   /postbox:
     get:
       tags:
@@ -186,7 +346,7 @@ paths:
                   date_post: "2025-01-28"
                   titre: "Etranges Frequences sur ..."
                   contenu: "Découverte d'une station inconnue."
-                - nom_user: "Joao"
+                - nom_user: "JaneDoe"
                   date_post: "2025-01-28"
                   titre: "Question sur la modulation"
                   contenu: "Quelqu'un a déjà capté ... ?"
@@ -231,6 +391,161 @@ paths:
                 $ref: '#/components/schemas/Error'
         "500":
           description: Erreur interne du serveur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+    put:
+      tags:
+        - POSTBOX
+      summary: Mettre à jour entièrement un message
+      description: >
+        Met à jour entièrement un post existant en l'identifiant par son titre ou son auteur.  
+        Exemple : changer le contenu, le titre, etc.
+      operationId: updatePostFully
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: titre
+          schema:
+            type: string
+            example: "Etranges Frequences sur ..."
+          description: Titre du post à mettre à jour.
+        - in: query
+          name: user
+          schema:
+            type: string
+            example: "JaneDoe"
+          description: Nom de l'utilisateur ayant créé le post.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Post'
+            example:
+              nom_user: "JaneDoe"
+              date_post: "2025-02-01"
+              titre: "Nouvelle découverte"
+              contenu: "Grosse mise à jour de mon post..."
+      responses:
+        "200":
+          description: Post mis à jour avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        "400":
+          description: Erreur de validation ou de paramètres
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Non autorisé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Post introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    patch:
+      tags:
+        - POSTBOX
+      summary: Mise à jour partielle d'un message
+      description: >
+        Permet de modifier partiellement un message, par exemple seulement le contenu ou seulement le titre.
+      operationId: patchPost
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: titre
+          schema:
+            type: string
+            example: "Etranges Frequences sur ..."
+          required: true
+          description: Titre du post à modifier.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                titre:
+                  type: string
+                  example: "Titre modifié"
+                contenu:
+                  type: string
+                  example: "J'ai juste édité le contenu partiellement."
+      responses:
+        "200":
+          description: Post mis à jour partiellement
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        "400":
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Non autorisé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Post introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags:
+        - POSTBOX
+      summary: Supprimer un ou plusieurs messages
+      description: >
+        Permet de supprimer un message précis selon son titre ou
+        de supprimer tous les messages d'un utilisateur spécifique.
+      operationId: deletePost
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: titre
+          schema:
+            type: string
+            example: "Nouvelle découverte"
+          description: Titre du post à supprimer.
+        - in: query
+          name: user
+          schema:
+            type: string
+            example: "Bobo"
+          description: Nom d'utilisateur pour supprimer tous ses posts.
+      responses:
+        "204":
+          description: Message(s) supprimé(s) avec succès
+        "401":
+          description: Non autorisé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Post introuvable
           content:
             application/json:
               schema:
@@ -310,6 +625,173 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+    post:
+      tags:
+        - INFO
+      summary: Créer une nouvelle info utilisateur
+      description: >
+        Ajouter un enregistrement d'information pour un nouvel utilisateur.  
+        Si l'utilisateur existe déjà, renvoie une erreur ou met à jour selon la logique choisie.
+      operationId: createUserInfo
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Info'
+            example:
+              nom_user: "Bobo"
+              date_creation: "2025-01-30"
+              historique:
+                - flag: "RadioLibre"
+                  date: "2025-01-30"
+      responses:
+        "201":
+          description: Informations utilisateur créées
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Info'
+        "400":
+          description: Corps de requête invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Non autorisé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      tags:
+        - INFO
+      summary: Mettre à jour ou remplacer les infos utilisateur
+      description: >
+        Mettre à jour **toutes** les infos d'un utilisateur.  
+        Si l'utilisateur n'existe pas, on peut choisir de le créer ou de retourner une erreur.
+      operationId: updateUserInfo
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: user
+          schema:
+            type: string
+            example: "Bobo"
+          required: true
+          description: Nom d'utilisateur ciblé.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Info'
+            example:
+              nom_user: "Bobo"
+              date_creation: "2025-01-31"
+              historique:
+                - flag: "ChaineDuRock"
+                  date: "2025-01-31"
+                - flag: "JazzStation"
+                  date: "2025-02-01"
+      responses:
+        "200":
+          description: Informations utilisateur mises à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Info'
+        "400":
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Non autorisé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Utilisateur introuvable (selon la logique d'implémentation)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    patch:
+      tags:
+        - INFO
+      summary: Mise à jour partielle des infos utilisateur
+      description: >
+        Permet de modifier seulement certaines propriétés de l'info utilisateur (par exemple, ajouter un nouvel historique).
+      operationId: patchUserInfo
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: user
+          schema:
+            type: string
+            example: "Bobo"
+          required: true
+          description: Nom d'utilisateur à modifier.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date_creation:
+                  type: string
+                  format: date
+                  example: "2025-01-29"
+                historique:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      flag:
+                        type: string
+                        example: "JoaoFM"
+                      date:
+                        type: string
+                        format: date
+                        example: "2025-02-01"
+      responses:
+        "200":
+          description: Informations partiellement mises à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Info'
+        "400":
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Non autorisé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Utilisateur introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+
   /chat:
     get:
       tags:
@@ -343,7 +825,7 @@ paths:
                 - nom_user: "S7VenStars"
                   date: "2025-01-28T15:56:00Z"
                   contenu: "Wow!"
-                - nom_user: "Joao"
+                - nom_user: "JaneDoe"
                   date: "2025-01-28T15:57:00Z"
                   contenu: "Tu captes quoi sur 250 MHz ?"
 
@@ -391,6 +873,154 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+    post:
+      tags:
+        - CHAT
+      summary: Publier un message de chat (autre variante)
+      description: >
+        Une variante de l'envoi de message de chat, qui crée toujours un nouveau message
+        plutôt que de fusionner si un message similaire existe déjà.
+      operationId: postChatMessage
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Chat'
+            example:
+              nom_user: "Bobo"
+              date: "2025-02-02T12:30:00Z"
+              contenu: "Salut, c'est moi Bobo!"
+      responses:
+        "201":
+          description: Message de chat publié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Chat'
+        "400":
+          description: Corps de requête invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Non autorisé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    patch:
+      tags:
+        - CHAT
+      summary: Modifier partiellement un message de chat
+      description: >
+        Permet de modifier le contenu ou la date d'un message de chat spécifiquement.
+      operationId: patchChatMessage
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: nom_user
+          schema:
+            type: string
+            example: "Bobo"
+          description: Nom d'utilisateur auteur du message à modifier.
+        - in: query
+          name: date
+          schema:
+            type: string
+            format: date-time
+            example: "2025-02-02T12:30:00Z"
+          description: Date précise du message à modifier.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                contenu:
+                  type: string
+                  example: "Je corrige mon message."
+                date:
+                  type: string
+                  format: date-time
+                  example: "2025-02-02T12:40:00Z"
+      responses:
+        "200":
+          description: Message de chat modifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Chat'
+        "400":
+          description: Requête invalide
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Non autorisé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Message introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags:
+        - CHAT
+      summary: Supprimer un message de chat
+      description: >
+        Supprime un ou plusieurs messages de chat selon le nom d'utilisateur et/ou la date du message.
+      operationId: deleteChatMessage
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: nom_user
+          schema:
+            type: string
+            example: "Bobo"
+          description: Nom d'utilisateur auteur du (des) message(s).
+        - in: query
+          name: date
+          schema:
+            type: string
+            format: date-time
+            example: "2025-02-02T12:30:00Z"
+          description: Date précise du message à supprimer.
+      responses:
+        "204":
+          description: Message(s) supprimé(s) avec succès
+        "401":
+          description: Non autorisé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Message introuvable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Erreur interne
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
 components:
   securitySchemes:
     BearerAuth:
@@ -414,6 +1044,7 @@ components:
           type: number
           format: float
           example: 190.00
+          description: "Fréquence en MHz"
         region:
           type: string
           description: Région géographique ou ville/pays de la station.
