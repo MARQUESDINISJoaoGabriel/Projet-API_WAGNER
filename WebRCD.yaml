@@ -1,0 +1,505 @@
+openapi: 3.0.0
+info:
+  title: Wager API
+  description: |
+    API for managing flags, postboxes (forum-like functionality), live chat,
+    and user info sections for a WebSDR-like system.  
+    This API aims to store and retrieve frequency flags, user posts, 
+    chat messages, and user-specific historical data.
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@websdr.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+
+servers:
+  - url: https://api.WebSDR.com/v1
+    description: Production server
+  - url: http://localhost:3000
+    description: Local development server
+
+tags:
+  - name: Flags
+    description: Manage flags and their data. Typically used to mark specific frequencies with info.
+  - name: Postbox
+    description: Forum-like functionality for user posts.
+  - name: Info
+    description: Manage user-specific information and history.
+  - name: Chat
+    description: Real-time chat about specific frequencies.
+  - name: List
+    description: Retrieve all data for flags.
+
+paths:
+
+  /flags:
+    get:
+      tags:
+        - List
+      summary: Retrieve all flags
+      description: |
+        This endpoint retrieves a list of all available flags. Flags are used
+        to mark frequencies with specific info such as name, frequency, and region.
+      operationId: getAllFlags
+      parameters:
+        - in: query
+          name: freqMin
+          schema:
+            type: number
+            format: float
+            example: 190.00
+          description: Filter flags by minimum frequency (MHz).
+        - in: query
+          name: freqMax
+          schema:
+            type: number
+            format: float
+            example: 597.00
+          description: Filter flags by maximum frequency (MHz).
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+          description: Page number for pagination.
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+          description: Number of items per page.
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [freq, region, nom]
+            example: freq
+          description: Sort flags by a specific field (e.g., 'freq', 'region', or 'nom').
+      responses:
+        "200":
+          description: List of flags
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Flag'
+              example:
+                - nom: "NRJ"
+                  freq: 190
+                  region: "Bordeaux, FRANCE"
+                - nom: "RockFM"
+                  freq: 250
+                  region: "Lyon, FRANCE"
+        "400":
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      tags:
+        - Flags
+      summary: Create or update a flag
+      description: |
+        Create a new flag or update an existing one based on the `nom` (unique name) property.
+        If the flag already exists, the values (freq, region) will be updated.
+      operationId: createOrUpdateFlag
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Flag'
+            example:
+              nom: "NRJ"
+              freq: 190.00
+              region: "Bordeaux, FRANCE"
+      responses:
+        "200":
+          description: Flag successfully created/updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Flag'
+              example:
+                nom: "NRJ"
+                freq: 190.00
+                region: "Bordeaux, FRANCE"
+        "400":
+          description: Invalid input data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Unauthorized (Missing or invalid Bearer token)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /postbox:
+    get:
+      tags:
+        - Postbox
+      summary: Retrieve all posts
+      description: Fetch all forum-like posts from the postbox.
+      operationId: getPosts
+      parameters:
+        - in: query
+          name: user
+          schema:
+            type: string
+          description: Filter posts by user name
+        - in: query
+          name: date
+          schema:
+            type: string
+            format: date
+          description: Filter posts by a specific date
+      responses:
+        "200":
+          description: List of posts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+              example:
+                - nom_user: "S7VenStars"
+                  date_post: "2025-01-28"
+                  titre: "Etranges Frequences sur ..."
+                  contenu: "Découverte d'une station inconnue."
+                - nom_user: "JaneDoe"
+                  date_post: "2025-01-28"
+                  titre: "Question sur la modulation"
+                  contenu: "Quelqu'un a déjà capté ... ?"
+
+    post:
+      tags:
+        - Postbox
+      summary: Create a new post
+      description: Create a new post in the postbox forum.
+      operationId: createPost
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Post'
+            example:
+              nom_user: "S7VenStars"
+              date_post: "2025-01-28"
+              titre: "Etranges Frequences sur ..."
+              contenu: "........"
+      responses:
+        "201":
+          description: Post successfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        "400":
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Unauthorized (Missing or invalid Bearer token)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /info:
+    get:
+      tags:
+        - Info
+      summary: Retrieve user info
+      description: Retrieve profile information and listening history for a specific user.
+      operationId: getUserInfo
+      parameters:
+        - in: query
+          name: user
+          schema:
+            type: string
+          description: Username to retrieve info for
+          required: true
+      responses:
+        "200":
+          description: User info retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Info'
+              example:
+                nom_user: "S7VenStars"
+                date_creation: "2025-01-28"
+                historique:
+                  - flag: "NRJ"
+                    date: "2025-01-27"
+                  - flag: "RockFM"
+                    date: "2025-01-28"
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags:
+        - Info
+      summary: Delete user info
+      description: Remove all stored info for a given user.
+      operationId: deleteUserInfo
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: user
+          schema:
+            type: string
+          description: Username to delete info for
+          required: true
+      responses:
+        "204":
+          description: User info deleted
+        "401":
+          description: Unauthorized (Missing or invalid Bearer token)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /chat:
+    get:
+      tags:
+        - Chat
+      summary: Retrieve chat messages
+      description: Get the most recent chat messages. Can be filtered by frequency or user if needed.
+      operationId: getChatMessages
+      parameters:
+        - in: query
+          name: frequency
+          schema:
+            type: number
+            format: float
+          description: Filter chat messages by frequency (MHz).
+        - in: query
+          name: user
+          schema:
+            type: string
+          description: Filter chat messages by username.
+      responses:
+        "200":
+          description: Chat messages retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Chat'
+              example:
+                - nom_user: "S7VenStars"
+                  date: "2025-01-28T15:56:00Z"
+                  contenu: "Wow!"
+                - nom_user: "JaneDoe"
+                  date: "2025-01-28T15:57:00Z"
+                  contenu: "Tu captes quoi sur 250 MHz ?"
+
+    put:
+      tags:
+        - Chat
+      summary: Send a new chat message
+      description: Add a new chat message in real-time about a specific frequency.
+      operationId: sendChatMessage
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Chat'
+            example:
+              nom_user: "S7VenStars"
+              date: "2025-01-28T15:56:00Z"
+              contenu: "Wow!"
+      responses:
+        "201":
+          description: Chat message successfully sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Chat'
+        "400":
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Unauthorized (Missing or invalid Bearer token)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Flag:
+      type: object
+      required:
+        - nom
+        - freq
+        - region
+      properties:
+        nom:
+          type: string
+          description: Unique name/identifier for the station or flag.
+          example: "NRJ"
+        freq:
+          type: number
+          format: float
+          example: 190.00
+        region:
+          type: string
+          description: Geographical region or city/country of the station.
+          example: "Bordeaux, FRANCE"
+
+    Post:
+      type: object
+      required:
+        - nom_user
+        - date_post
+        - titre
+        - contenu
+      properties:
+        nom_user:
+          type: string
+          description: Username of the post's author.
+          example: "S7VenStars"
+        date_post:
+          type: string
+          format: date
+          description: Date when the post was created.
+          example: "2025-01-28"
+        titre:
+          type: string
+          description: Title of the post.
+          example: "Etranges Frequences sur ..."
+        contenu:
+          type: string
+          description: Body/content of the post.
+          example: "........"
+
+    Chat:
+      type: object
+      required:
+        - nom_user
+        - date
+        - contenu
+      properties:
+        nom_user:
+          type: string
+          description: Username of the person sending the chat message.
+          example: "S7VenStars"
+        date:
+          type: string
+          format: date-time
+          description: Timestamp of the message, in ISO 8601 format.
+          example: "2025-01-28T15:56:00Z"
+        contenu:
+          type: string
+          description: Content of the chat message.
+          example: "Wow!"
+
+    Info:
+      type: object
+      required:
+        - nom_user
+        - date_creation
+      properties:
+        nom_user:
+          type: string
+          description: The username for which this info is stored.
+          example: "S7VenStars"
+        date_creation:
+          type: string
+          format: date
+          description: The date this user was created in the system.
+          example: "2025-01-28"
+        historique:
+          type: array
+          description: A history of flags listened by the user, along with the date of listening.
+          items:
+            type: object
+            properties:
+              flag:
+                type: string
+                description: The name of the flag or station listened to.
+                example: "NRJ"
+              date:
+                type: string
+                format: date
+                description: The date the user listened to this station.
+                example: "2025-01-27"
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: "Invalid request parameters"
