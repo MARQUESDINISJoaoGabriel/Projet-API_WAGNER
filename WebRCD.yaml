@@ -186,7 +186,7 @@ paths:
                   date_post: "2025-01-28"
                   titre: "Etranges Frequences sur ..."
                   contenu: "Découverte d'une station inconnue."
-                - nom_user: "JaneDoe"
+                - nom_user: "Joao"
                   date_post: "2025-01-28"
                   titre: "Question sur la modulation"
                   contenu: "Quelqu'un a déjà capté ... ?"
@@ -343,7 +343,7 @@ paths:
                 - nom_user: "S7VenStars"
                   date: "2025-01-28T15:56:00Z"
                   contenu: "Wow!"
-                - nom_user: "JaneDoe"
+                - nom_user: "Joao"
                   date: "2025-01-28T15:57:00Z"
                   contenu: "Tu captes quoi sur 250 MHz ?"
 
