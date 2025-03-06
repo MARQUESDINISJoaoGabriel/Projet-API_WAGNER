@@ -1,4 +1,5 @@
 # **README – Documentation de l’API Wager**  
+/!\ CE PROJET N'EST PAS ENCORE PUBLIQUE. VOICI SA DOCUMENTATION. /!\
 
 Ce document décrit l’API Wager, qui permet de gérer :  
 - Des **flags** (fréquences marquées)  
